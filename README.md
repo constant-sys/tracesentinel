@@ -57,13 +57,13 @@ python -m tracesentinel analyze examples/auth-demo.jsonl --window 600 --threshol
 {"timestamp":"2026-09-01T08:01:00Z","event_type":"auth_failure","source_ip":"198.51.100.23","username":"admin","host":"lab-web"}
 ```
 
-事件类型为 `auth_failure` 或 `auth_success`。更多约定见[架构说明](docs/architecture.md)和[规则说明](docs/detection-rules.md)。目前只接收这个归一化格式，SSH / Windows 原生日志适配属于下一阶段。
+事件类型为 `auth_failure` 或 `auth_success`。更多约定见[架构说明](docs/architecture.md)和[规则说明](docs/detection-rules.md)。Windows Event Log 等其他平台适配属于后续阶段。
 
 ## 范围与局限
 
 这是学习与实验工具。告警说明规则触发，并不证明账号已被攻陷。日志里没有密码值，因此多账号失败只能提示疑似喷洒。共享出口、账号误输、自动化任务都可能造成误报；分布式和低速攻击可能漏报。三个规则可命中同一事件序列，告警数不能等同事件数。
 
-v0.1 在内存中排序输入，复杂度约为 O(n log n)，尚未验证生产规模。样例完全由模拟数据构成，不将它的通过情况表述为真实检出率。大文件、持续流处理、允许列表、真实样本评估和跨主机关联见[路线图](docs/roadmap.md)。
+当前版本仍在内存中排序输入，复杂度约为 O(n log n)，尚未验证生产规模。样例完全由模拟数据构成，不将它的通过情况表述为真实检出率。大文件、持续流处理、允许列表、真实样本评估和跨主机关联见[路线图](docs/roadmap.md)。
 
 ## 长期开发
 
