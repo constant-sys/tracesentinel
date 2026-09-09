@@ -21,6 +21,14 @@ python -m unittest discover -s tests -v
 
 可选安装：`python -m pip install -e .`，之后使用 `tracesentinel analyze ...`。
 
+也可以直接分析常见的 OpenSSH `auth.log`（RFC 3164 时间戳）。由于这类日志不包含年份，归档日志请显式传入年份；默认按当前 UTC 年解释，并按 UTC 解析：
+
+```sh
+python -m tracesentinel analyze /var/log/auth.log --format openssh --year 2026 --output output/ssh
+```
+
+适配器识别 `Failed password` 和 `Accepted password`（含 `invalid user`），保留原始物理行号；其他服务、`Failed publickey` 等不支持的行会跳过。遇到看似认证消息但 IP 或时间损坏时会定位并拒绝该行，避免静默丢失证据。当前不自动识别系统本地时区，请在导入前确认采集主机时区。
+
 ## 已实现
 
 | 检测 | 触发条件（默认 5 分钟） | 输出 |

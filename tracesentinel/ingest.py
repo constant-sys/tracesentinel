@@ -5,7 +5,7 @@ from __future__ import annotations
 import ipaddress
 import json
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timezone, tzinfo
 from pathlib import Path
 from typing import Iterable
 
@@ -25,6 +25,23 @@ class ValidationError(ValueError):
 _TIMESTAMP = re.compile(
     r"^\d{4}-\d{2}-\d{2}[Tt](?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d"
     r"(?:\.\d{1,6})?(?:[Zz]|[+-](?:[01]\d|2[0-3]):[0-5]\d)$"
+)
+
+# RFC 3164 syslog prefix emitted by common Linux rsyslog configurations.  The
+# year and timezone are not present in this format, so ``parse_openssh`` makes
+# both explicit parameters (with stable, documented defaults).
+_OPENSSH_PREFIX = re.compile(
+    r"^(?P<month>Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
+    r"\s+(?P<day>\d{1,2})\s+(?P<clock>\d{2}:\d{2}:\d{2})"
+    r"\s+(?P<host>\S+)\s+sshd(?:\[\d+\])?:\s+(?P<message>.+)$"
+)
+_OPENSSH_FAILURE = re.compile(
+    r"^Failed password for (?:invalid user )?(?P<username>\S+)"
+    r" from (?P<source_ip>\S+)\s+port\s+\d+(?:\s+.*)?$"
+)
+_OPENSSH_SUCCESS = re.compile(
+    r"^Accepted password for (?P<username>\S+)"
+    r" from (?P<source_ip>\S+)\s+port\s+\d+(?:\s+.*)?$"
 )
 
 
@@ -114,3 +131,94 @@ def load_events(path: str | Path) -> list[AuthEvent]:
     input_path = Path(path)
     with input_path.open("r", encoding="utf-8-sig") as handle:
         return _parse_lines(handle, str(input_path))
+
+
+def parse_openssh(
+    text: str,
+    *,
+    source: str = "input",
+    year: int | None = None,
+    timezone_info: tzinfo = timezone.utc,
+) -> list[AuthEvent]:
+    """Adapt common RFC 3164 ``sshd`` authentication lines.
+
+    The adapter recognizes ``Failed password`` and ``Accepted password``
+    messages such as ``Sep  9 12:34:56 host sshd[123]: Failed password for
+    invalid user admin from 203.0.113.10 port 22 ssh2``.  RFC 3164 omits a
+    year and timezone; callers analyzing an archived log should pass ``year``
+    (the current UTC year is used when omitted) and may provide the collector's
+    local timezone via ``timezone_info``.  Physical line numbers include blank
+    and unrelated lines.  Lines that do not match the supported ``sshd``
+    messages are ignored so a full auth.log can be supplied directly.
+
+    ``ValidationError`` is raised when a line has a supported message shape but
+    contains an invalid timestamp or source address; this prevents silently
+    dropping evidence that appeared to be an authentication event.
+    """
+    if not isinstance(text, str):
+        raise TypeError("text must be a string")
+    parse_year = datetime.now(timezone.utc).year if year is None else year
+    if isinstance(parse_year, bool) or not isinstance(parse_year, int):
+        raise ValueError("year must be an integer")
+    if not isinstance(timezone_info, tzinfo):
+        raise TypeError("timezone_info must be a datetime tzinfo")
+
+    events: list[AuthEvent] = []
+    for line_number, line in enumerate(text.removeprefix("\ufeff").splitlines(), start=1):
+        if not line.strip():
+            continue
+        prefix = _OPENSSH_PREFIX.fullmatch(line)
+        if prefix is None:
+            continue
+        message = prefix.group("message")
+        failure = _OPENSSH_FAILURE.fullmatch(message)
+        success = _OPENSSH_SUCCESS.fullmatch(message)
+        if failure is None and success is None:
+            continue
+
+        def fail(detail: str) -> ValidationError:
+            return ValidationError(source, line_number, detail)
+
+        try:
+            local_timestamp = datetime.strptime(
+                f"{parse_year} {prefix.group('month')} {prefix.group('day')} {prefix.group('clock')}",
+                "%Y %b %d %H:%M:%S",
+            ).replace(tzinfo=timezone_info)
+            timestamp = local_timestamp.astimezone(timezone.utc)
+        except (ValueError, OverflowError) as exc:
+            raise fail(f"invalid RFC 3164 timestamp: {exc}") from exc
+
+        match = failure or success
+        assert match is not None
+        try:
+            if "%" in match.group("source_ip"):
+                raise ValueError("scoped IPv6 addresses are not supported")
+            source_ip = str(ipaddress.ip_address(match.group("source_ip")))
+        except ValueError as exc:
+            raise fail(f"invalid source_ip: {exc}") from exc
+        events.append(
+            AuthEvent(
+                timestamp=timestamp,
+                event_type="auth_failure" if failure else "auth_success",
+                source_ip=source_ip,
+                username=match.group("username"),
+                host=prefix.group("host"),
+                line_number=line_number,
+                source=source,
+            )
+        )
+    return events
+
+
+def load_openssh(
+    path: str | Path,
+    *,
+    year: int | None = None,
+    timezone_info: tzinfo = timezone.utc,
+) -> list[AuthEvent]:
+    """Read a UTF-8 OpenSSH/RFC 3164 log while retaining its filename source."""
+    input_path = Path(path)
+    with input_path.open("r", encoding="utf-8-sig") as handle:
+        return parse_openssh(
+            handle.read(), source=str(input_path), year=year, timezone_info=timezone_info
+        )

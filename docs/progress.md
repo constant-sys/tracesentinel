@@ -16,7 +16,15 @@
 
 当前局限：仅归一化 JSONL；全部数据在内存处理；暂无生产日志评估；没有后台采集服务。完整条件见 `docs/detection-rules.md`。
 
-下一次：开始 v0.2 的首个 OpenSSH 适配器，先固定一种带完整时间与时区的日志格式，同时定义解析失败行为。
+下一次：补充 OpenSSH 适配器的更多认证方法和解析失败统计，再开始 v0.3 的标注场景与 precision/recall 评估。
+
+## 2026-09-09 · v0.2 OpenSSH adapter
+
+- 支持常见 RFC 3164 `sshd` `Failed password` / `Accepted password` 行，含 `invalid user`。
+- CLI 增加 `--format openssh --year YEAR`，API 提供 `parse_openssh` / `load_openssh`。
+- 保留文件名、物理行号和原始证据；IPv4/IPv6 规范化，归一化到 UTC。
+- 无关行跳过；认证消息中的坏 IP/时间显式定位并报错，避免静默漏报。
+- 新增 4 项适配器测试；全套测试在 Python 3.14.5 上通过（待本轮最终验证）。
 
 ## Continue checklist
 

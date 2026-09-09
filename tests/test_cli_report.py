@@ -84,6 +84,20 @@ class CLIReportTests(unittest.TestCase):
         self.assertIn("研究员", page)
         self.assertIn(report["alerts"][0]["alert_id"], page)
 
+    def test_cli_openssh_format_runs_adapter_and_preserves_lines(self):
+        self.source = self.root / "auth.log"
+        self.source.write_text(
+            "noise\n"
+            "Sep  9 12:00:00 edge sshd: Failed password for admin from 192.0.2.7 port 22 ssh2\n"
+            "Sep  9 12:00:01 edge sshd: Accepted password for admin from 192.0.2.7 port 22 ssh2\n",
+            encoding="utf-8",
+        )
+        result, stdout, stderr = self.run_cli("--format", "openssh", "--year", "2026", "--threshold", "5")
+        self.assertEqual(result, 0, stderr)
+        report = json.loads((self.output / "report.json").read_text(encoding="utf-8"))
+        self.assertEqual(report["summary"]["events"], 2)
+        self.assertEqual(report["alerts"], [])
+
     def test_output_is_byte_identical_and_hash_identifies_original_bytes(self):
         raw = b"\xef\xbb\xbf" + fixture().replace("\n", "\r\n").encode("utf-8")
         self.source.write_bytes(raw)

@@ -6,7 +6,7 @@ import sys
 
 from . import __version__
 from .engine import EngineConfig, detect
-from .ingest import parse_jsonl
+from .ingest import parse_jsonl, parse_openssh
 from .report import build_report, render_html, render_json
 
 
@@ -19,6 +19,9 @@ def main(argv=None):
     analyze.add_argument("--output", type=Path, default=Path("output"))
     analyze.add_argument("--window", type=int, default=300, help="Inclusive window in seconds")
     analyze.add_argument("--threshold", type=int, default=5, help="Failure/distinct-account threshold")
+    analyze.add_argument("--format", choices=("jsonl", "openssh"), default="jsonl",
+                         help="Input format (default: jsonl)")
+    analyze.add_argument("--year", type=int, help="Year for OpenSSH RFC 3164 timestamps")
     args = parser.parse_args(argv)
     try:
         config = EngineConfig(window_seconds=args.window, brute_force_threshold=args.threshold,
@@ -26,7 +29,11 @@ def main(argv=None):
                               success_after_failures_threshold=args.threshold)
         # Hash and parse the same bytes so evidence identifies exactly the analyzed input.
         raw = args.input.read_bytes()
-        events = parse_jsonl(raw.decode("utf-8-sig"), source=args.input.name)
+        decoded = raw.decode("utf-8-sig")
+        if args.format == "openssh":
+            events = parse_openssh(decoded, source=args.input.name, year=args.year)
+        else:
+            events = parse_jsonl(decoded, source=args.input.name)
         alerts = detect(events, config)
         report = build_report(events, alerts, config, source=args.input.name,
                               source_sha256=sha256(raw).hexdigest())

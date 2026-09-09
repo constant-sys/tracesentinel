@@ -19,3 +19,13 @@ python -m tracesentinel analyze examples/auth-demo.jsonl --output output/demo
 ```
 
 Open `output/demo/report.html` locally. `report.json` contains source hash, rule parameters, counts and original evidence line references. The tracked `report.html` and `report.json` in this folder are generated from this synthetic fixture with the default configuration.
+
+## OpenSSH fixture
+
+`ssh-demo.txt` uses the common RFC 3164 `sshd` format. It is synthetic and uses documentation-only IPs. Run:
+
+```sh
+python -m tracesentinel analyze examples/ssh-demo.txt --format openssh --year 2026 --output output/ssh-demo
+```
+
+The six lines produce two findings: repeated failures and a success after those failures. The adapter preserves the original line numbers and skips unrelated `auth.log` noise. A real archived log must be interpreted with its collector timezone; the CLI currently uses UTC.
