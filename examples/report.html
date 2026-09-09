@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<title>TraceSentinel · Investigation report</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#121f33;--line:#2b3b53;--fg:#e7edf7;--muted:#9dadc6;--accent:#58ddc0}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 system-ui,sans-serif}
+main{max-width:1100px;margin:auto;padding:48px 24px}header{border-top:4px solid var(--accent);padding-top:24px}
+.eyebrow,.tag{font-size:12px;letter-spacing:.12em;color:var(--accent);font-weight:700}
+h1{font-size:clamp(30px,5vw,48px);letter-spacing:-.04em;margin:8px 0}h2{font-size:21px;margin:8px 0}
+.muted{color:var(--muted);overflow-wrap:anywhere}.metrics{display:flex;gap:16px;margin:24px 0;flex-wrap:wrap}
+.metric,article{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px}
+.metric{flex:1;min-width:180px}.metric strong{display:block;font-size:36px;line-height:1.2}
+article{margin:18px 0;overflow-wrap:anywhere}article[data-severity=high]{border-left:4px solid #f8a16c}
+.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;text-align:left;margin-top:12px;white-space:nowrap}
+td,th{padding:10px 12px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-size:12px}
+summary{cursor:pointer;color:var(--accent);padding:12px 0}pre{white-space:pre-wrap;overflow-wrap:anywhere}
+footer{font-size:13px;color:var(--muted);padding-top:16px}code{overflow-wrap:anywhere}
+</style></head><body><main><header><div class="eyebrow">TRACESENTINEL / AUTHENTICATION TELEMETRY</div>
+<h1>From login traces to evidence.</h1><p class="muted">Offline investigation report · v0.1.0</p></header>
+<div class="metrics"><div class="metric"><strong>14</strong>events analyzed</div>
+<div class="metric"><strong>3</strong>findings to investigate</div>
+<div class="metric"><strong>300s</strong>inclusive detection window</div></div>
+<p class="muted">Source: auth-demo.jsonl<br>SHA-256: <code>91b13d727b98da813bf4ea2b61849619f535f99df3d1bce4970875b4ba38bce3</code></p>
+<article data-severity="medium">
+<div class="tag">TS-AUTH-001 · MEDIUM</div>
+<h2>Repeated authentication failures against one account</h2><p>198.51.100.23 → lab-web
+ · Account: admin</p>
+<p class="muted">2026-09-01T08:01:00Z — 2026-09-01T08:03:00Z · ID a76038e5a54b8ef8</p>
+<details open><summary>Evidence · 5 events</summary>
+<div class="scroll"><table><thead><tr><th>Input line</th><th>Time (UTC)</th><th>Event</th><th>Account</th></tr></thead>
+<tbody><tr><td>2</td><td>2026-09-01T08:01:00Z</td><td>auth_failure</td><td>admin</td></tr><tr><td>3</td><td>2026-09-01T08:01:30Z</td><td>auth_failure</td><td>admin</td></tr><tr><td>4</td><td>2026-09-01T08:02:00Z</td><td>auth_failure</td><td>admin</td></tr><tr><td>5</td><td>2026-09-01T08:02:30Z</td><td>auth_failure</td><td>admin</td></tr><tr><td>6</td><td>2026-09-01T08:03:00Z</td><td>auth_failure</td><td>admin</td></tr></tbody></table></div></details>
+<details><summary>Detection parameters & interpretation</summary><pre>{
+  &quot;failure_count&quot;: 5,
+  &quot;threshold&quot;: 5,
+  &quot;window_seconds&quot;: 300
+}</pre></details></article>
+<article data-severity="high">
+<div class="tag">TS-AUTH-003 · HIGH</div>
+<h2>Successful authentication after repeated failures</h2><p>198.51.100.23 → lab-web
+ · Account: admin</p>
+<p class="muted">2026-09-01T08:01:00Z — 2026-09-01T08:03:20Z · ID 45f85e2cd629cb32</p>
+<details open><summary>Evidence · 6 events</summary>
+<div class="scroll"><table><thead><tr><th>Input line</th><th>Time (UTC)</th><th>Event</th><th>Account</th></tr></thead>
+<tbody><tr><td>2</td><td>2026-09-01T08:01:00Z</td><td>auth_failure</td><td>admin</td></tr><tr><td>3</td><td>2026-09-01T08:01:30Z</td><td>auth_failure</td><td>admin</td></tr><tr><td>4</td><td>2026-09-01T08:02:00Z</td><td>auth_failure</td><td>admin</td></tr><tr><td>5</td><td>2026-09-01T08:02:30Z</td><td>auth_failure</td><td>admin</td></tr><tr><td>6</td><td>2026-09-01T08:03:00Z</td><td>auth_failure</td><td>admin</td></tr><tr><td>7</td><td>2026-09-01T08:03:20Z</td><td>auth_success</td><td>admin</td></tr></tbody></table></div></details>
+<details><summary>Detection parameters & interpretation</summary><pre>{
+  &quot;failure_count&quot;: 5,
+  &quot;threshold&quot;: 5,
+  &quot;window_seconds&quot;: 300,
+  &quot;interpretation&quot;: &quot;Suspicious authentication sequence; compromise is not confirmed.&quot;
+}</pre></details></article>
+<article data-severity="medium">
+<div class="tag">TS-AUTH-002 · MEDIUM</div>
+<h2>Authentication failures across multiple accounts</h2><p>203.0.113.42 → lab-vpn
+ · Account: multiple</p>
+<p class="muted">2026-09-01T08:05:00Z — 2026-09-01T08:06:20Z · ID 70e8feb6ce76a830</p>
+<details open><summary>Evidence · 5 events</summary>
+<div class="scroll"><table><thead><tr><th>Input line</th><th>Time (UTC)</th><th>Event</th><th>Account</th></tr></thead>
+<tbody><tr><td>8</td><td>2026-09-01T08:05:00Z</td><td>auth_failure</td><td>alice</td></tr><tr><td>9</td><td>2026-09-01T08:05:20Z</td><td>auth_failure</td><td>bob</td></tr><tr><td>10</td><td>2026-09-01T08:05:40Z</td><td>auth_failure</td><td>carol</td></tr><tr><td>11</td><td>2026-09-01T08:06:00Z</td><td>auth_failure</td><td>dave</td></tr><tr><td>12</td><td>2026-09-01T08:06:20Z</td><td>auth_failure</td><td>erin</td></tr></tbody></table></div></details>
+<details><summary>Detection parameters & interpretation</summary><pre>{
+  &quot;failure_count&quot;: 5,
+  &quot;distinct_users&quot;: 5,
+  &quot;usernames&quot;: [
+    &quot;alice&quot;,
+    &quot;bob&quot;,
+    &quot;carol&quot;,
+    &quot;dave&quot;,
+    &quot;erin&quot;
+  ],
+  &quot;threshold&quot;: 5,
+  &quot;window_seconds&quot;: 300
+}</pre></details></article><article><h2>Investigation checklist</h2><p>Validate expected user activity and source ownership.
+Correlate with MFA, endpoint and subsequent session events. Check shared egress and automation before escalating.
+Preserve the original log and compare its SHA-256 with this report.</p></article>
+<footer>Heuristic findings are leads, not confirmation of compromise. Multiple rules may describe one sequence.
+Password values are not available: a multi-account burst only suggests spraying.
+Generated locally; this report contains no scripts, remote fonts or analytics.</footer></main></body></html>
