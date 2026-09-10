@@ -4,7 +4,7 @@ from .engine import DetectionConfig, DetectionEngine, EngineConfig, detect
 from .ingest import ValidationError, load_events, load_openssh, parse_jsonl, parse_openssh
 from .models import Alert, AuthEvent, Event
 
-__version__ = "0.1.0"
+__version__ = "0.3.0"
 
 __all__ = [
     "Alert",

@@ -1,0 +1,1035 @@
+{
+  "schema_version": "1.0",
+  "tool_version": "0.3.0",
+  "dataset": {
+    "id": "auth-synthetic-v1",
+    "description": "Authored synthetic attack and benign scenarios. Labels describe scenario intent, not detector output. This is a regression suite, not a production accuracy estimate.",
+    "synthetic": true,
+    "sha256": "cc30f0eef271101777b0f831aed8eb7f36a7858f03707278d3f404d82ab1cfef"
+  },
+  "config": {
+    "window_seconds": 300,
+    "brute_force_threshold": 5,
+    "password_spray_threshold": 5,
+    "success_after_failures_threshold": 5
+  },
+  "methodology": {
+    "unit": "scenario_rule_binary",
+    "rules": [
+      "TS-AUTH-001",
+      "TS-AUTH-002",
+      "TS-AUTH-003"
+    ],
+    "aggregation": "micro",
+    "prediction": "Each scenario/rule pair is positive when at least one alert matches that rule; repeated alerts count once.",
+    "scope": "Each scenario is isolated. All three known rules are evaluated for every scenario.",
+    "labels": "expected_rules lists ground-truth malicious behavior labels authored independently of detector output.",
+    "evidence": "Evidence line_number is the 1-based event array index, not the physical dataset JSON line.",
+    "undefined_metrics": "A metric with a zero denominator is null, including F1 = 2TP / (2TP + FP + FN).",
+    "limitations": "Synthetic regression scenarios only; these scores do not estimate production precision or recall."
+  },
+  "summary": {
+    "scenarios": 12,
+    "events": 64,
+    "alerts": 11,
+    "evaluated_pairs": 36
+  },
+  "metrics": {
+    "tp": 6,
+    "fp": 4,
+    "fn": 2,
+    "tn": 24,
+    "precision": 0.6,
+    "recall": 0.75,
+    "f1": 0.6666666666666666
+  },
+  "by_rule": {
+    "TS-AUTH-001": {
+      "tp": 4,
+      "fp": 2,
+      "fn": 1,
+      "tn": 5,
+      "precision": 0.6666666666666666,
+      "recall": 0.8,
+      "f1": 0.7272727272727273
+    },
+    "TS-AUTH-002": {
+      "tp": 1,
+      "fp": 1,
+      "fn": 1,
+      "tn": 9,
+      "precision": 0.5,
+      "recall": 0.5,
+      "f1": 0.5
+    },
+    "TS-AUTH-003": {
+      "tp": 1,
+      "fp": 1,
+      "fn": 0,
+      "tn": 10,
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1": 0.6666666666666666
+    }
+  },
+  "scenarios": [
+    {
+      "id": "benign-login",
+      "description": "Routine legitimate login; no suspicious sequence.",
+      "event_count": 1,
+      "expected_rules": [],
+      "predicted_rules": [],
+      "false_positive_rules": [],
+      "false_negative_rules": [],
+      "alerts": []
+    },
+    {
+      "id": "benign-password-recovery",
+      "description": "Legitimate user remembers the password after five errors. Failure and success telemetry resembles compromise.",
+      "event_count": 6,
+      "expected_rules": [],
+      "predicted_rules": [
+        "TS-AUTH-001",
+        "TS-AUTH-003"
+      ],
+      "false_positive_rules": [
+        "TS-AUTH-001",
+        "TS-AUTH-003"
+      ],
+      "false_negative_rules": [],
+      "alerts": [
+        {
+          "alert_id": "7bec8fb9c1f89ad1",
+          "rule_id": "TS-AUTH-001",
+          "severity": "medium",
+          "title": "Repeated authentication failures against one account",
+          "source_ip": "192.0.2.10",
+          "host": "synthetic-ssh",
+          "username": "alice",
+          "start": "2026-09-01T00:00:00Z",
+          "end": "2026-09-01T00:00:04Z",
+          "evidence": [
+            {
+              "event_id": "auth-synthetic-v1/benign-password-recovery:1",
+              "timestamp": "2026-09-01T00:00:00Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-password-recovery",
+              "line_number": 1
+            },
+            {
+              "event_id": "auth-synthetic-v1/benign-password-recovery:2",
+              "timestamp": "2026-09-01T00:00:01Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-password-recovery",
+              "line_number": 2
+            },
+            {
+              "event_id": "auth-synthetic-v1/benign-password-recovery:3",
+              "timestamp": "2026-09-01T00:00:02Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-password-recovery",
+              "line_number": 3
+            },
+            {
+              "event_id": "auth-synthetic-v1/benign-password-recovery:4",
+              "timestamp": "2026-09-01T00:00:03Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-password-recovery",
+              "line_number": 4
+            },
+            {
+              "event_id": "auth-synthetic-v1/benign-password-recovery:5",
+              "timestamp": "2026-09-01T00:00:04Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-password-recovery",
+              "line_number": 5
+            }
+          ],
+          "details": {
+            "failure_count": 5,
+            "threshold": 5,
+            "window_seconds": 300
+          }
+        },
+        {
+          "alert_id": "5f6b027a27b54edf",
+          "rule_id": "TS-AUTH-003",
+          "severity": "high",
+          "title": "Successful authentication after repeated failures",
+          "source_ip": "192.0.2.10",
+          "host": "synthetic-ssh",
+          "username": "alice",
+          "start": "2026-09-01T00:00:00Z",
+          "end": "2026-09-01T00:00:05Z",
+          "evidence": [
+            {
+              "event_id": "auth-synthetic-v1/benign-password-recovery:1",
+              "timestamp": "2026-09-01T00:00:00Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-password-recovery",
+              "line_number": 1
+            },
+            {
+              "event_id": "auth-synthetic-v1/benign-password-recovery:2",
+              "timestamp": "2026-09-01T00:00:01Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-password-recovery",
+              "line_number": 2
+            },
+            {
+              "event_id": "auth-synthetic-v1/benign-password-recovery:3",
+              "timestamp": "2026-09-01T00:00:02Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-password-recovery",
+              "line_number": 3
+            },
+            {
+              "event_id": "auth-synthetic-v1/benign-password-recovery:4",
+              "timestamp": "2026-09-01T00:00:03Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-password-recovery",
+              "line_number": 4
+            },
+            {
+              "event_id": "auth-synthetic-v1/benign-password-recovery:5",
+              "timestamp": "2026-09-01T00:00:04Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-password-recovery",
+              "line_number": 5
+            },
+            {
+              "event_id": "auth-synthetic-v1/benign-password-recovery:6",
+              "timestamp": "2026-09-01T00:00:05Z",
+              "event_type": "auth_success",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-password-recovery",
+              "line_number": 6
+            }
+          ],
+          "details": {
+            "failure_count": 5,
+            "threshold": 5,
+            "window_seconds": 300,
+            "interpretation": "Suspicious authentication sequence; compromise is not confirmed."
+          }
+        }
+      ]
+    },
+    {
+      "id": "benign-service-retry",
+      "description": "Legitimate service retries a stale password five times; expected no malicious activity, but burst rule will flag it.",
+      "event_count": 5,
+      "expected_rules": [],
+      "predicted_rules": [
+        "TS-AUTH-001"
+      ],
+      "false_positive_rules": [
+        "TS-AUTH-001"
+      ],
+      "false_negative_rules": [],
+      "alerts": [
+        {
+          "alert_id": "22f35ce5eda5b134",
+          "rule_id": "TS-AUTH-001",
+          "severity": "medium",
+          "title": "Repeated authentication failures against one account",
+          "source_ip": "192.0.2.10",
+          "host": "synthetic-ssh",
+          "username": "backup-service",
+          "start": "2026-09-01T00:00:00Z",
+          "end": "2026-09-01T00:00:04Z",
+          "evidence": [
+            {
+              "event_id": "auth-synthetic-v1/benign-service-retry:1",
+              "timestamp": "2026-09-01T00:00:00Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "backup-service",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-service-retry",
+              "line_number": 1
+            },
+            {
+              "event_id": "auth-synthetic-v1/benign-service-retry:2",
+              "timestamp": "2026-09-01T00:00:01Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "backup-service",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-service-retry",
+              "line_number": 2
+            },
+            {
+              "event_id": "auth-synthetic-v1/benign-service-retry:3",
+              "timestamp": "2026-09-01T00:00:02Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "backup-service",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-service-retry",
+              "line_number": 3
+            },
+            {
+              "event_id": "auth-synthetic-v1/benign-service-retry:4",
+              "timestamp": "2026-09-01T00:00:03Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "backup-service",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-service-retry",
+              "line_number": 4
+            },
+            {
+              "event_id": "auth-synthetic-v1/benign-service-retry:5",
+              "timestamp": "2026-09-01T00:00:04Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "backup-service",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-service-retry",
+              "line_number": 5
+            }
+          ],
+          "details": {
+            "failure_count": 5,
+            "threshold": 5,
+            "window_seconds": 300
+          }
+        }
+      ]
+    },
+    {
+      "id": "benign-shared-nat",
+      "description": "Five legitimate users behind one NAT each mistype once. Shared egress resembles spraying.",
+      "event_count": 5,
+      "expected_rules": [],
+      "predicted_rules": [
+        "TS-AUTH-002"
+      ],
+      "false_positive_rules": [
+        "TS-AUTH-002"
+      ],
+      "false_negative_rules": [],
+      "alerts": [
+        {
+          "alert_id": "ed45be0ae8d36d23",
+          "rule_id": "TS-AUTH-002",
+          "severity": "medium",
+          "title": "Authentication failures across multiple accounts",
+          "source_ip": "192.0.2.10",
+          "host": "synthetic-ssh",
+          "username": null,
+          "start": "2026-09-01T00:00:00Z",
+          "end": "2026-09-01T00:00:04Z",
+          "evidence": [
+            {
+              "event_id": "auth-synthetic-v1/benign-shared-nat:1",
+              "timestamp": "2026-09-01T00:00:00Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "staff-0",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-shared-nat",
+              "line_number": 1
+            },
+            {
+              "event_id": "auth-synthetic-v1/benign-shared-nat:2",
+              "timestamp": "2026-09-01T00:00:01Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "staff-1",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-shared-nat",
+              "line_number": 2
+            },
+            {
+              "event_id": "auth-synthetic-v1/benign-shared-nat:3",
+              "timestamp": "2026-09-01T00:00:02Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "staff-2",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-shared-nat",
+              "line_number": 3
+            },
+            {
+              "event_id": "auth-synthetic-v1/benign-shared-nat:4",
+              "timestamp": "2026-09-01T00:00:03Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "staff-3",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-shared-nat",
+              "line_number": 4
+            },
+            {
+              "event_id": "auth-synthetic-v1/benign-shared-nat:5",
+              "timestamp": "2026-09-01T00:00:04Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "staff-4",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/benign-shared-nat",
+              "line_number": 5
+            }
+          ],
+          "details": {
+            "failure_count": 5,
+            "distinct_users": 5,
+            "usernames": [
+              "staff-0",
+              "staff-1",
+              "staff-2",
+              "staff-3",
+              "staff-4"
+            ],
+            "threshold": 5,
+            "window_seconds": 300
+          }
+        }
+      ]
+    },
+    {
+      "id": "benign-typos",
+      "description": "Legitimate user mistypes twice and then succeeds.",
+      "event_count": 3,
+      "expected_rules": [],
+      "predicted_rules": [],
+      "false_positive_rules": [],
+      "false_negative_rules": [],
+      "alerts": []
+    },
+    {
+      "id": "distributed-spray",
+      "description": "Coordinated simulated spray uses five source IPs and five accounts; per-source grouping misses the campaign.",
+      "event_count": 5,
+      "expected_rules": [
+        "TS-AUTH-002"
+      ],
+      "predicted_rules": [],
+      "false_positive_rules": [],
+      "false_negative_rules": [
+        "TS-AUTH-002"
+      ],
+      "alerts": []
+    },
+    {
+      "id": "exact-window-guessing",
+      "description": "Simulated guessing has exactly five failures in an inclusive 300-second window.",
+      "event_count": 5,
+      "expected_rules": [
+        "TS-AUTH-001"
+      ],
+      "predicted_rules": [
+        "TS-AUTH-001"
+      ],
+      "false_positive_rules": [],
+      "false_negative_rules": [],
+      "alerts": [
+        {
+          "alert_id": "203502f9f517c00a",
+          "rule_id": "TS-AUTH-001",
+          "severity": "medium",
+          "title": "Repeated authentication failures against one account",
+          "source_ip": "192.0.2.10",
+          "host": "synthetic-ssh",
+          "username": "alice",
+          "start": "2026-09-01T00:00:00Z",
+          "end": "2026-09-01T00:05:00Z",
+          "evidence": [
+            {
+              "event_id": "auth-synthetic-v1/exact-window-guessing:1",
+              "timestamp": "2026-09-01T00:00:00Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/exact-window-guessing",
+              "line_number": 1
+            },
+            {
+              "event_id": "auth-synthetic-v1/exact-window-guessing:2",
+              "timestamp": "2026-09-01T00:01:15Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/exact-window-guessing",
+              "line_number": 2
+            },
+            {
+              "event_id": "auth-synthetic-v1/exact-window-guessing:3",
+              "timestamp": "2026-09-01T00:02:30Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/exact-window-guessing",
+              "line_number": 3
+            },
+            {
+              "event_id": "auth-synthetic-v1/exact-window-guessing:4",
+              "timestamp": "2026-09-01T00:03:45Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/exact-window-guessing",
+              "line_number": 4
+            },
+            {
+              "event_id": "auth-synthetic-v1/exact-window-guessing:5",
+              "timestamp": "2026-09-01T00:05:00Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/exact-window-guessing",
+              "line_number": 5
+            }
+          ],
+          "details": {
+            "failure_count": 5,
+            "threshold": 5,
+            "window_seconds": 300
+          }
+        }
+      ]
+    },
+    {
+      "id": "guessing-then-success",
+      "description": "Simulated attacker guesses a password and authenticates after five failures.",
+      "event_count": 6,
+      "expected_rules": [
+        "TS-AUTH-001",
+        "TS-AUTH-003"
+      ],
+      "predicted_rules": [
+        "TS-AUTH-001",
+        "TS-AUTH-003"
+      ],
+      "false_positive_rules": [],
+      "false_negative_rules": [],
+      "alerts": [
+        {
+          "alert_id": "12c02200da4d956a",
+          "rule_id": "TS-AUTH-001",
+          "severity": "medium",
+          "title": "Repeated authentication failures against one account",
+          "source_ip": "192.0.2.10",
+          "host": "synthetic-ssh",
+          "username": "alice",
+          "start": "2026-09-01T00:00:00Z",
+          "end": "2026-09-01T00:00:04Z",
+          "evidence": [
+            {
+              "event_id": "auth-synthetic-v1/guessing-then-success:1",
+              "timestamp": "2026-09-01T00:00:00Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/guessing-then-success",
+              "line_number": 1
+            },
+            {
+              "event_id": "auth-synthetic-v1/guessing-then-success:2",
+              "timestamp": "2026-09-01T00:00:01Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/guessing-then-success",
+              "line_number": 2
+            },
+            {
+              "event_id": "auth-synthetic-v1/guessing-then-success:3",
+              "timestamp": "2026-09-01T00:00:02Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/guessing-then-success",
+              "line_number": 3
+            },
+            {
+              "event_id": "auth-synthetic-v1/guessing-then-success:4",
+              "timestamp": "2026-09-01T00:00:03Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/guessing-then-success",
+              "line_number": 4
+            },
+            {
+              "event_id": "auth-synthetic-v1/guessing-then-success:5",
+              "timestamp": "2026-09-01T00:00:04Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/guessing-then-success",
+              "line_number": 5
+            }
+          ],
+          "details": {
+            "failure_count": 5,
+            "threshold": 5,
+            "window_seconds": 300
+          }
+        },
+        {
+          "alert_id": "fa77549907076f6c",
+          "rule_id": "TS-AUTH-003",
+          "severity": "high",
+          "title": "Successful authentication after repeated failures",
+          "source_ip": "192.0.2.10",
+          "host": "synthetic-ssh",
+          "username": "alice",
+          "start": "2026-09-01T00:00:00Z",
+          "end": "2026-09-01T00:00:05Z",
+          "evidence": [
+            {
+              "event_id": "auth-synthetic-v1/guessing-then-success:1",
+              "timestamp": "2026-09-01T00:00:00Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/guessing-then-success",
+              "line_number": 1
+            },
+            {
+              "event_id": "auth-synthetic-v1/guessing-then-success:2",
+              "timestamp": "2026-09-01T00:00:01Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/guessing-then-success",
+              "line_number": 2
+            },
+            {
+              "event_id": "auth-synthetic-v1/guessing-then-success:3",
+              "timestamp": "2026-09-01T00:00:02Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/guessing-then-success",
+              "line_number": 3
+            },
+            {
+              "event_id": "auth-synthetic-v1/guessing-then-success:4",
+              "timestamp": "2026-09-01T00:00:03Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/guessing-then-success",
+              "line_number": 4
+            },
+            {
+              "event_id": "auth-synthetic-v1/guessing-then-success:5",
+              "timestamp": "2026-09-01T00:00:04Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/guessing-then-success",
+              "line_number": 5
+            },
+            {
+              "event_id": "auth-synthetic-v1/guessing-then-success:6",
+              "timestamp": "2026-09-01T00:00:05Z",
+              "event_type": "auth_success",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/guessing-then-success",
+              "line_number": 6
+            }
+          ],
+          "details": {
+            "failure_count": 5,
+            "threshold": 5,
+            "window_seconds": 300,
+            "interpretation": "Suspicious authentication sequence; compromise is not confirmed."
+          }
+        }
+      ]
+    },
+    {
+      "id": "password-guessing",
+      "description": "Simulated attacker guesses one account's password six times in a short burst.",
+      "event_count": 6,
+      "expected_rules": [
+        "TS-AUTH-001"
+      ],
+      "predicted_rules": [
+        "TS-AUTH-001"
+      ],
+      "false_positive_rules": [],
+      "false_negative_rules": [],
+      "alerts": [
+        {
+          "alert_id": "458bfe43ae602ef9",
+          "rule_id": "TS-AUTH-001",
+          "severity": "medium",
+          "title": "Repeated authentication failures against one account",
+          "source_ip": "192.0.2.10",
+          "host": "synthetic-ssh",
+          "username": "alice",
+          "start": "2026-09-01T00:00:00Z",
+          "end": "2026-09-01T00:00:04Z",
+          "evidence": [
+            {
+              "event_id": "auth-synthetic-v1/password-guessing:1",
+              "timestamp": "2026-09-01T00:00:00Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/password-guessing",
+              "line_number": 1
+            },
+            {
+              "event_id": "auth-synthetic-v1/password-guessing:2",
+              "timestamp": "2026-09-01T00:00:01Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/password-guessing",
+              "line_number": 2
+            },
+            {
+              "event_id": "auth-synthetic-v1/password-guessing:3",
+              "timestamp": "2026-09-01T00:00:02Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/password-guessing",
+              "line_number": 3
+            },
+            {
+              "event_id": "auth-synthetic-v1/password-guessing:4",
+              "timestamp": "2026-09-01T00:00:03Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/password-guessing",
+              "line_number": 4
+            },
+            {
+              "event_id": "auth-synthetic-v1/password-guessing:5",
+              "timestamp": "2026-09-01T00:00:04Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/password-guessing",
+              "line_number": 5
+            }
+          ],
+          "details": {
+            "failure_count": 5,
+            "threshold": 5,
+            "window_seconds": 300
+          }
+        }
+      ]
+    },
+    {
+      "id": "password-spray",
+      "description": "Simulated attacker tries a common password against six accounts. Password reuse is scenario knowledge, absent from telemetry.",
+      "event_count": 6,
+      "expected_rules": [
+        "TS-AUTH-002"
+      ],
+      "predicted_rules": [
+        "TS-AUTH-002"
+      ],
+      "false_positive_rules": [],
+      "false_negative_rules": [],
+      "alerts": [
+        {
+          "alert_id": "4846f98dae9ecd2a",
+          "rule_id": "TS-AUTH-002",
+          "severity": "medium",
+          "title": "Authentication failures across multiple accounts",
+          "source_ip": "192.0.2.10",
+          "host": "synthetic-ssh",
+          "username": null,
+          "start": "2026-09-01T00:00:00Z",
+          "end": "2026-09-01T00:00:04Z",
+          "evidence": [
+            {
+              "event_id": "auth-synthetic-v1/password-spray:1",
+              "timestamp": "2026-09-01T00:00:00Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "user-0",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/password-spray",
+              "line_number": 1
+            },
+            {
+              "event_id": "auth-synthetic-v1/password-spray:2",
+              "timestamp": "2026-09-01T00:00:01Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "user-1",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/password-spray",
+              "line_number": 2
+            },
+            {
+              "event_id": "auth-synthetic-v1/password-spray:3",
+              "timestamp": "2026-09-01T00:00:02Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "user-2",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/password-spray",
+              "line_number": 3
+            },
+            {
+              "event_id": "auth-synthetic-v1/password-spray:4",
+              "timestamp": "2026-09-01T00:00:03Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "user-3",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/password-spray",
+              "line_number": 4
+            },
+            {
+              "event_id": "auth-synthetic-v1/password-spray:5",
+              "timestamp": "2026-09-01T00:00:04Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "user-4",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/password-spray",
+              "line_number": 5
+            }
+          ],
+          "details": {
+            "failure_count": 5,
+            "distinct_users": 5,
+            "usernames": [
+              "user-0",
+              "user-1",
+              "user-2",
+              "user-3",
+              "user-4"
+            ],
+            "threshold": 5,
+            "window_seconds": 300
+          }
+        }
+      ]
+    },
+    {
+      "id": "slow-guessing",
+      "description": "Simulated attacker guesses six times at two-minute intervals. The default short window misses this behavior.",
+      "event_count": 6,
+      "expected_rules": [
+        "TS-AUTH-001"
+      ],
+      "predicted_rules": [],
+      "false_positive_rules": [],
+      "false_negative_rules": [
+        "TS-AUTH-001"
+      ],
+      "alerts": []
+    },
+    {
+      "id": "two-guessing-bursts",
+      "description": "Two simulated guessing bursts for one account, separated by ten minutes. Two raw alerts count as one positive scenario-rule pair.",
+      "event_count": 10,
+      "expected_rules": [
+        "TS-AUTH-001"
+      ],
+      "predicted_rules": [
+        "TS-AUTH-001"
+      ],
+      "false_positive_rules": [],
+      "false_negative_rules": [],
+      "alerts": [
+        {
+          "alert_id": "e8c17d60af395e92",
+          "rule_id": "TS-AUTH-001",
+          "severity": "medium",
+          "title": "Repeated authentication failures against one account",
+          "source_ip": "192.0.2.10",
+          "host": "synthetic-ssh",
+          "username": "alice",
+          "start": "2026-09-01T00:00:00Z",
+          "end": "2026-09-01T00:00:04Z",
+          "evidence": [
+            {
+              "event_id": "auth-synthetic-v1/two-guessing-bursts:1",
+              "timestamp": "2026-09-01T00:00:00Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/two-guessing-bursts",
+              "line_number": 1
+            },
+            {
+              "event_id": "auth-synthetic-v1/two-guessing-bursts:2",
+              "timestamp": "2026-09-01T00:00:01Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/two-guessing-bursts",
+              "line_number": 2
+            },
+            {
+              "event_id": "auth-synthetic-v1/two-guessing-bursts:3",
+              "timestamp": "2026-09-01T00:00:02Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/two-guessing-bursts",
+              "line_number": 3
+            },
+            {
+              "event_id": "auth-synthetic-v1/two-guessing-bursts:4",
+              "timestamp": "2026-09-01T00:00:03Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/two-guessing-bursts",
+              "line_number": 4
+            },
+            {
+              "event_id": "auth-synthetic-v1/two-guessing-bursts:5",
+              "timestamp": "2026-09-01T00:00:04Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/two-guessing-bursts",
+              "line_number": 5
+            }
+          ],
+          "details": {
+            "failure_count": 5,
+            "threshold": 5,
+            "window_seconds": 300
+          }
+        },
+        {
+          "alert_id": "378ba5ecc2cafa1d",
+          "rule_id": "TS-AUTH-001",
+          "severity": "medium",
+          "title": "Repeated authentication failures against one account",
+          "source_ip": "192.0.2.10",
+          "host": "synthetic-ssh",
+          "username": "alice",
+          "start": "2026-09-01T00:10:00Z",
+          "end": "2026-09-01T00:10:04Z",
+          "evidence": [
+            {
+              "event_id": "auth-synthetic-v1/two-guessing-bursts:6",
+              "timestamp": "2026-09-01T00:10:00Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/two-guessing-bursts",
+              "line_number": 6
+            },
+            {
+              "event_id": "auth-synthetic-v1/two-guessing-bursts:7",
+              "timestamp": "2026-09-01T00:10:01Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/two-guessing-bursts",
+              "line_number": 7
+            },
+            {
+              "event_id": "auth-synthetic-v1/two-guessing-bursts:8",
+              "timestamp": "2026-09-01T00:10:02Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/two-guessing-bursts",
+              "line_number": 8
+            },
+            {
+              "event_id": "auth-synthetic-v1/two-guessing-bursts:9",
+              "timestamp": "2026-09-01T00:10:03Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/two-guessing-bursts",
+              "line_number": 9
+            },
+            {
+              "event_id": "auth-synthetic-v1/two-guessing-bursts:10",
+              "timestamp": "2026-09-01T00:10:04Z",
+              "event_type": "auth_failure",
+              "source_ip": "192.0.2.10",
+              "username": "alice",
+              "host": "synthetic-ssh",
+              "source": "auth-synthetic-v1/two-guessing-bursts",
+              "line_number": 10
+            }
+          ],
+          "details": {
+            "failure_count": 5,
+            "threshold": 5,
+            "window_seconds": 300
+          }
+        }
+      ]
+    }
+  ]
+}

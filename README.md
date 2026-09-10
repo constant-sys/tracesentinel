@@ -4,7 +4,7 @@
 
 An offline, evidence-first blue-team engineering lab. Normalize authentication events, detect suspicious sequences, and produce reproducible investigation reports.
 
-TraceSentinel 是持续迭代的蓝队安全工程项目。目前的 v0.1 完成一个可演示的闭环：**认证日志 → 输入校验 → 滑动窗口检测 → 带证据的 JSON / HTML 调查报告**。
+TraceSentinel 是持续迭代的蓝队安全工程项目。v0.3 提供 **认证日志 → 输入校验 → 滑动窗口检测 → 带证据的调查报告 → 标注场景评估** 的可复现流程。
 
 ## 五分钟运行
 
@@ -27,7 +27,18 @@ python -m unittest discover -s tests -v
 python -m tracesentinel analyze /var/log/auth.log --format openssh --year 2026 --output output/ssh
 ```
 
-适配器识别 `Failed password` 和 `Accepted password`（含 `invalid user`），保留原始物理行号；其他服务、`Failed publickey` 等不支持的行会跳过。遇到看似认证消息但 IP 或时间损坏时会定位并拒绝该行，避免静默丢失证据。当前不自动识别系统本地时区，请在导入前确认采集主机时区。
+适配器识别 `Failed password` 和 `Accepted password`（含 `invalid user`），保留原始物理行号。匹配支持格式后的无效 IP/日期会报错；未匹配行（包括部分损坏认证行、其他服务和 `Failed publickey`）会跳过，目前没有跳过统计。CLI 按 UTC 解释时间，不自动识别采集主机时区；非 UTC 数据应通过 API 显式提供 `timezone_info`。补齐这些限制是下一轮目标。
+
+## 检测效果评估
+
+```sh
+python -m tracesentinel evaluate examples/evaluation/auth-synthetic-v1.json --output output/evaluation
+python -m tracesentinel evaluate examples/evaluation/auth-synthetic-v1.json --threshold 6 --output output/evaluation-threshold-6
+```
+
+内置 **12 个场景、64 条模拟事件**，含正常活动、攻击意图、已知误报与漏报。默认得到 **TP 6 / FP 4 / FN 2 / TN 24**，对应场景规则级 precision 60%、recall 75%。这些数字仅衡量这组人工回归场景，不是生产精度。
+
+评估按“场景 × 规则”计分，重复告警不重复计入比例；同时保留全部告警、标签和 SHA-256。查看[示例评估报告](examples/evaluation/evaluation.md)及[统计标准与参数对比](docs/evaluation.md)。
 
 ## 已实现
 

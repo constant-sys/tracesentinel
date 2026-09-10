@@ -23,6 +23,8 @@ The CLI reads the full file and the engine sorts it in memory; group state is re
 
 ## Engineering decisions
 
+`evaluation.py` validates a whole synthetic scenario dataset and runs the unchanged detector independently per scenario. It computes one binary decision for each (scenario, rule) pair and retains full raw alerts separately. `evaluation_report.py` renders a Markdown summary, escaping author-provided text as literal character entities. The dataset generator authors labels independently and never calls detection. See [evaluation methodology](evaluation.md) for metrics, evidence indexing and limits.
+
 - Standard library first: make the initial experiment reproducible on an ordinary student laptop.
 - A normalized event contract first: keep platform parsing separate from rule logic.
 - Explainable thresholds first: build evaluation fixtures before experimenting with anomaly models.

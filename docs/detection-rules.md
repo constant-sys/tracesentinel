@@ -26,4 +26,4 @@ Burst rules emit on threshold crossing and re-arm after the active window falls 
 
 ## Validation
 
-Each rule needs a positive fixture, a negative fixture, exact-window boundary tests, host-isolation tests and an explanation of expected errors. The repository demo gives 3 expected findings from 14 fully synthetic events. This is functional validation; detection precision/recall on representative labeled data remains future work.
+Each rule needs a positive fixture, a negative fixture, exact-window boundary tests, host-isolation tests and an explanation of expected errors. The repository demo gives 3 expected findings from 14 fully synthetic events. The v0.3 [evaluation suite](evaluation.md) adds 12 labeled synthetic scenarios, including known false positives and misses. It scores scenario-rule pairs, not incident attribution or evidence accuracy. Precision/recall on representative independent labeled data remains future work.

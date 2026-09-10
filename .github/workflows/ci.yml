@@ -26,7 +26,10 @@ jobs:
         run: python -m tracesentinel analyze examples/auth-demo.jsonl --output output/demo
       - name: OpenSSH adapter demo
         run: python -m tracesentinel analyze examples/ssh-demo.txt --format openssh --year 2026 --output output/ssh-demo
+      - name: Synthetic evaluation
+        run: python -m tracesentinel evaluate examples/evaluation/auth-synthetic-v1.json --output output/evaluation
       - name: Build and verify installed command
         run: |
           python -m pip install .
           tracesentinel --version
+          tracesentinel evaluate examples/evaluation/auth-synthetic-v1.json --output output/installed-evaluation
