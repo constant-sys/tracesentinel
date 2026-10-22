@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 — 2026-10-22
+
+- Add OpenSSH parser accounting for total, blank, unmatched and malformed authentication lines.
+- Add `parse_openssh_result` / `load_openssh_result` with publickey, `Invalid user` and line-specific warnings.
+- Include parser statistics in JSON and offline HTML reports; surface malformed-line counts on the CLI.
+- Preserve the strict legacy `parse_openssh` contract and add regression coverage for parser quality and report output.
+
 ## 0.3.0 — 2026-09-10
 
 - Add `evaluate` with strict, self-contained synthetic datasets and scenario-rule binary metrics.

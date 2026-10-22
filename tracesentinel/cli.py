@@ -8,7 +8,7 @@ from . import __version__
 from .engine import EngineConfig, detect
 from .evaluation import evaluate_dataset
 from .evaluation_report import render_evaluation_markdown
-from .ingest import parse_jsonl, parse_openssh
+from .ingest import parse_jsonl, parse_openssh_result
 from .report import build_report, render_html, render_json
 
 
@@ -48,15 +48,28 @@ def main(argv=None):
         # Hash and parse the same bytes so evidence identifies exactly the analyzed input.
         raw = args.input.read_bytes()
         decoded = raw.decode("utf-8-sig")
+        parser_stats = None
         if args.format == "openssh":
-            events = parse_openssh(decoded, source=args.input.name, year=args.year)
+            parsed = parse_openssh_result(decoded, source=args.input.name, year=args.year)
+            events = parsed.events
+            parser_stats = {
+                "format": "openssh",
+                "total_lines": parsed.total_lines,
+                "blank_lines": parsed.blank_lines,
+                "unmatched_lines": parsed.unmatched_lines,
+                "malformed_auth_lines": parsed.malformed_auth_lines,
+                "warnings": list(parsed.warnings),
+            }
         else:
             events = parse_jsonl(decoded, source=args.input.name)
         alerts = detect(events, config)
         report = build_report(events, alerts, config, source=args.input.name,
-                              source_sha256=sha256(raw).hexdigest())
+                              source_sha256=sha256(raw).hexdigest(), parser=parser_stats)
         targets = [args.output / "report.json", args.output / "report.html"]
         _write_reports(args.input, args.output, targets, [render_json(report), render_html(report)])
+        if parser_stats is not None and parser_stats["malformed_auth_lines"]:
+            print(f"warning: {parser_stats['malformed_auth_lines']} malformed OpenSSH authentication lines; "
+                  "see parser.warnings in report.json", file=sys.stderr)
         print(f"Analyzed {len(events)} events; found {len(alerts)} alerts.")
         print(f"Reports: {args.output / 'report.json'} and {args.output / 'report.html'}")
         return 0

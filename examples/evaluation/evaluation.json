@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "tool_version": "0.3.0",
+  "tool_version": "0.3.1",
   "dataset": {
     "id": "auth-synthetic-v1",
     "description": "Authored synthetic attack and benign scenarios. Labels describe scenario intent, not detector output. This is a regression suite, not a production accuracy estimate.",

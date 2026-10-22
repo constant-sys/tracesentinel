@@ -7,8 +7,8 @@ import json
 from . import __version__
 
 
-def build_report(events, alerts, config, *, source, source_sha256):
-    return {
+def build_report(events, alerts, config, *, source, source_sha256, parser=None):
+    report = {
         "schema_version": "1.0", "tool_version": __version__,
         "source": source, "source_sha256": source_sha256,
         "config": asdict(config),
@@ -16,6 +16,9 @@ def build_report(events, alerts, config, *, source, source_sha256):
                     "by_rule": dict(sorted(Counter(a.rule_id for a in alerts).items()))},
         "alerts": [alert.to_dict() for alert in alerts],
     }
+    if parser is not None:
+        report["parser"] = parser
+    return report
 
 
 def render_json(report):
@@ -69,9 +72,31 @@ footer{{font-size:13px;color:var(--muted);padding-top:16px}}code{{overflow-wrap:
 <div class="metric"><strong>{report['summary']['alerts']}</strong>findings to investigate</div>
 <div class="metric"><strong>{report['config']['window_seconds']}s</strong>inclusive detection window</div></div>
 <p class="muted">Source: {e(report['source'])}<br>SHA-256: <code>{e(report['source_sha256'])}</code></p>
+{_render_parser_summary(report, e)}
 {cards_html}<article><h2>Investigation checklist</h2><p>Validate expected user activity and source ownership.
 Correlate with MFA, endpoint and subsequent session events. Check shared egress and automation before escalating.
 Preserve the original log and compare its SHA-256 with this report.</p></article>
 <footer>Heuristic findings are leads, not confirmation of compromise. Multiple rules may describe one sequence.
 Password values are not available: a multi-account burst only suggests spraying.
 Generated locally; this report contains no scripts, remote fonts or analytics.</footer></main></body></html>\n'''
+
+
+def _render_parser_summary(report, escape_value):
+    parser = report.get("parser")
+    if not parser:
+        return ""
+    rows = "".join(
+        f"<tr><th>{escape_value(key)}</th><td>{escape_value(value)}</td></tr>"
+        for key, value in parser.items()
+        if key != "warnings"
+    )
+    warnings = parser.get("warnings", [])
+    warning_html = ""
+    if warnings:
+        items = "".join(f"<li>{escape_value(item)}</li>" for item in warnings)
+        warning_html = f"<details><summary>Parser warnings · {len(warnings)}</summary><ul>{items}</ul></details>"
+    return (
+        '<article><h2>Input parser accounting</h2>'
+        '<p class="muted">These counts explain which physical lines became normalized events.</p>'
+        f'<div class="scroll"><table><tbody>{rows}</tbody></table></div>{warning_html}</article>'
+    )

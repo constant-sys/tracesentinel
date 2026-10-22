@@ -1,6 +1,6 @@
 # TraceSentinel · Detection evaluation
 
-Dataset: **auth&#45;synthetic&#45;v1** · tool version 0&#46;3&#46;0
+Dataset: **auth&#45;synthetic&#45;v1** · tool version 0&#46;3&#46;1
 
 Authored synthetic attack and benign scenarios&#46; Labels describe scenario intent&#44; not detector output&#46; This is a regression suite&#44; not a production accuracy estimate&#46;
 

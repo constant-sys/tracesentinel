@@ -97,6 +97,29 @@ class CLIReportTests(unittest.TestCase):
         report = json.loads((self.output / "report.json").read_text(encoding="utf-8"))
         self.assertEqual(report["summary"]["events"], 2)
         self.assertEqual(report["alerts"], [])
+        self.assertEqual(report["parser"], {
+            "format": "openssh",
+            "total_lines": 3,
+            "blank_lines": 0,
+            "unmatched_lines": 1,
+            "malformed_auth_lines": 0,
+            "warnings": [],
+        })
+        self.assertIn("Input parser accounting", (self.output / "report.html").read_text(encoding="utf-8"))
+
+    def test_cli_openssh_report_surfaces_malformed_auth_lines(self):
+        self.source = self.root / "auth.log"
+        self.source.write_text(
+            "Sep  9 12:00:00 edge sshd: Failed password for admin from not-an-ip port 22 ssh2\n",
+            encoding="utf-8",
+        )
+        result, _, stderr = self.run_cli("--format", "openssh", "--year", "2026")
+        self.assertEqual(result, 0, stderr)
+        self.assertIn("1 malformed OpenSSH authentication lines", stderr)
+        report = json.loads((self.output / "report.json").read_text(encoding="utf-8"))
+        self.assertEqual(report["summary"]["events"], 0)
+        self.assertEqual(report["parser"]["malformed_auth_lines"], 1)
+        self.assertEqual(len(report["parser"]["warnings"]), 1)
 
     def test_output_is_byte_identical_and_hash_identifies_original_bytes(self):
         raw = b"\xef\xbb\xbf" + fixture().replace("\n", "\r\n").encode("utf-8")

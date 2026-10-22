@@ -4,7 +4,7 @@
 
 An offline, evidence-first blue-team engineering lab. Normalize authentication events, detect suspicious sequences, and produce reproducible investigation reports.
 
-TraceSentinel 是持续迭代的蓝队安全工程项目。v0.3 提供 **认证日志 → 输入校验 → 滑动窗口检测 → 带证据的调查报告 → 标注场景评估** 的可复现流程。
+TraceSentinel 是持续迭代的蓝队安全工程项目。v0.3.1 提供 **认证日志 → 输入校验 → 滑动窗口检测 → 带证据的调查报告 → 标注场景评估** 的可复现流程，并为 OpenSSH 采集保留逐行质量统计。
 
 ## 五分钟运行
 
@@ -27,7 +27,7 @@ python -m unittest discover -s tests -v
 python -m tracesentinel analyze /var/log/auth.log --format openssh --year 2026 --output output/ssh
 ```
 
-适配器识别 `Failed password` 和 `Accepted password`（含 `invalid user`），保留原始物理行号。匹配支持格式后的无效 IP/日期会报错；未匹配行（包括部分损坏认证行、其他服务和 `Failed publickey`）会跳过，目前没有跳过统计。CLI 按 UTC 解释时间，不自动识别采集主机时区；非 UTC 数据应通过 API 显式提供 `timezone_info`。补齐这些限制是下一轮目标。
+CLI 会把 OpenSSH 解析统计写入 `report.json` 和离线 HTML：总行数、空行、未匹配行、损坏认证行以及逐行警告。`parse_openssh_result` 识别 password、publickey 和 `Invalid user`；无法安全归一化的认证行不会进入检测，但会计入 `malformed_auth_lines`，CLI 同时在标准错误中提示。传统的 `parse_openssh` API 仍保持严格报错行为。RFC 3164 不包含年份，归档日志应显式传入 `--year`；CLI 仍按 UTC 解释时间，非 UTC 数据可通过 API 的 `timezone_info` 提供采集时区。
 
 ## 检测效果评估
 
@@ -58,7 +58,7 @@ python -m tracesentinel evaluate examples/evaluation/auth-synthetic-v1.json --th
 python -m tracesentinel analyze examples/auth-demo.jsonl --window 600 --threshold 8 --output output/custom
 ```
 
-正常分析退出码为 `0`（包括发现告警），无效输入或写入失败为 `2`。输出目录中的 `report.json` / `report.html` 会被本次结果覆盖。
+正常分析退出码为 `0`（包括发现告警）；JSONL 无效输入或写入失败为 `2`。OpenSSH 损坏认证行会保留在报告警告中并继续处理，其余无法读取的输入错误仍返回 `2`。输出目录中的 `report.json` / `report.html` 会被本次结果覆盖。
 
 ## 数据格式
 
